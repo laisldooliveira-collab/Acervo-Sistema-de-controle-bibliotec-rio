@@ -1,0 +1,515 @@
+<title>Sistema Acervo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
+<style>
+/* Layout: página de documentação em coluna única, navegação fixa no topo,
+   janelas Swing desenhadas em HTML, diagramas em SVG gerados a partir de dados. */
+:root {
+  --bg: #F3F5F8; --surface: #FFFFFF; --fg: #16202C; --muted: #566274; --line: #D3DAE3;
+  --accent: #1B6B5A; --tint: #E2EEEA; --pk: #9A5B00; --fk: #2A5AA6;
+  --sw-win: #FBFCFD; --sw-title: #EEF1F5; --sw-title-fg: #1F2933; --sw-field: #FFFFFF; --sw-border: #CCD3DD;
+  --sw-btn: #F1F3F6; --sw-select: #DCE8FF; --sw-grid: #E6EAF0; --sw-text: #1F2933; --sw-warn: #C62828; --sw-primary: #2F6FED; --sw-primary-fg: #FFFFFF; --sw-soft: #F3F5F8; --sw-sub: #6B7685;
+  --font-display: "Newsreader", Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E141B; --surface: #151D27; --fg: #E7ECF2; --muted: #98A4B3; --line: #2A3544;
+    --accent: #52B99F; --tint: #1B2B29; --pk: #E0A84A; --fk: #7FA8E8;
+    --sw-win: #1F242C; --sw-title: #171B21; --sw-title-fg: #E6EAF0; --sw-field: #262C35; --sw-border: #3A4350;
+    --sw-btn: #2C333D; --sw-select: #27406B; --sw-grid: #2F3640; --sw-text: #E6EAF0; --sw-warn: #FF8A80; --sw-primary: #5B93FF; --sw-primary-fg: #0B1220; --sw-soft: #232932; --sw-sub: #93A0B1;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E141B; --surface: #151D27; --fg: #E7ECF2; --muted: #98A4B3; --line: #2A3544;
+  --accent: #52B99F; --tint: #1B2B29; --pk: #E0A84A; --fk: #7FA8E8;
+  --sw-win: #1F242C; --sw-title: #171B21; --sw-title-fg: #E6EAF0; --sw-field: #262C35; --sw-border: #3A4350;
+  --sw-btn: #2C333D; --sw-select: #27406B; --sw-grid: #2F3640; --sw-text: #E6EAF0; --sw-warn: #FF8A80; --sw-primary: #5B93FF; --sw-primary-fg: #0B1220; --sw-soft: #232932; --sw-sub: #93A0B1;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; padding-inline: 16px; }
+.wrap { max-width: 1080px; margin-inline: auto; }
+a { color: var(--accent); }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.5rem, 3.5vw, 2rem); }
+h3 { font-size: 1.15rem; }
+p { margin: 0; max-width: 68ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.88em; }
+.label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+nav.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); margin-inline: -16px; padding: 10px 16px; }
+nav.top .wrap { display: flex; gap: 8px 22px; flex-wrap: wrap; align-items: baseline; }
+nav.top b { font-family: var(--font-display); font-size: 1.1rem; margin-right: 8px; }
+nav.top a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 0.9rem; }
+nav.top a:hover, nav.top a:focus-visible { color: var(--accent); outline: none; text-decoration: underline; }
+
+header.hero { padding-block: 44px 28px; display: grid; gap: 18px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-size: 0.8rem; border: 1px solid var(--line); background: var(--surface); padding: 3px 10px; border-radius: 99px; color: var(--muted); }
+section { padding-block: 40px; display: grid; gap: 22px; border-top: 1px solid var(--line); scroll-margin-top: 56px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+.cols > * { min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); padding: 18px 20px; display: grid; gap: 10px; align-content: start; }
+ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+.scroll { overflow-x: auto; }
+
+table.doc { border-collapse: collapse; width: 100%; min-width: 640px; background: var(--surface); font-size: 0.9rem; }
+table.doc th, table.doc td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.doc th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: var(--tint); }
+
+.screen { display: grid; gap: 12px; }
+.screen header { display: grid; gap: 2px; }
+.screen header .mono { color: var(--accent); font-weight: 600; font-size: 0.95rem; }
+.screen .meta { font-size: 0.82rem; color: var(--muted); }
+.screens { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 40px 28px; }
+.screens > * { min-width: 0; }
+.screens .wide { grid-column: 1 / -1; }
+
+/* Janela Swing (visual plano e moderno, estilo FlatLaf) */
+.win { border: 1px solid var(--sw-border); border-radius: 10px; overflow: hidden; background: var(--sw-win); color: var(--sw-text); font: 13px/1.4 var(--font-body); box-shadow: 0 10px 30px rgba(15,23,42,.12); max-width: 100%; }
+.win.narrow { max-width: 380px; }
+.bar { display: flex; align-items: center; gap: 8px; background: var(--sw-title); color: var(--sw-title-fg); padding: 8px 12px; border-bottom: 1px solid var(--sw-border); font-size: 12px; }
+.bar i { width: 10px; height: 10px; background: var(--sw-primary); border-radius: 3px; flex: none; }
+.bar b { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar em { font-style: normal; display: flex; gap: 14px; color: var(--sw-sub); }
+.bar em u { text-decoration: none; }
+.pad { padding: 16px; display: grid; gap: 14px; }
+.win fieldset { border: 1px solid var(--sw-border); border-radius: 8px; margin: 0; padding: 10px 12px 12px; min-width: 0; background: var(--sw-soft); }
+.win legend { padding: 0 6px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--sw-sub); font-weight: 600; }
+.win label { color: var(--sw-sub); }
+.form { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; align-items: center; }
+.form.two { grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr); }
+.in { background: var(--sw-field); border: 1px solid var(--sw-border); border-radius: 6px; padding: 5px 10px; min-height: 30px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.in.combo::after { content: "▾"; float: right; color: var(--sw-sub); }
+.in.ro { background: var(--sw-soft); color: var(--sw-sub); }
+.in.warn { color: var(--sw-warn); font-weight: 600; }
+.in.list { white-space: normal; padding: 4px; display: grid; gap: 2px; }
+.in.list div { padding: 3px 8px; border-radius: 4px; }
+.in.list .on { background: var(--sw-select); font-weight: 600; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row .in { flex: 1; min-width: 80px; }
+.row.end { justify-content: flex-end; }
+.btn { background: var(--sw-field); border: 1px solid var(--sw-border); border-radius: 6px; padding: 6px 14px; white-space: nowrap; font-weight: 500; }
+.btn.def { background: var(--sw-primary); border-color: var(--sw-primary); color: var(--sw-primary-fg); }
+.tw { overflow-x: auto; background: var(--sw-field); border: 1px solid var(--sw-border); border-radius: 8px; }
+table.t { border-collapse: collapse; width: 100%; min-width: 440px; }
+table.t th { background: var(--sw-soft); text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--sw-sub); font-weight: 600; padding: 8px 12px; border-bottom: 1px solid var(--sw-border); white-space: nowrap; }
+table.t td { padding: 8px 12px; border-bottom: 1px solid var(--sw-grid); white-space: nowrap; }
+table.t tr:last-child td { border-bottom: 0; }
+table.t tr.sel td { background: var(--sw-select); }
+table.t tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--sw-primary); }
+.warn { color: var(--sw-warn); font-weight: 600; }
+.status { background: var(--sw-title); border-top: 1px solid var(--sw-border); padding: 6px 14px; display: flex; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap; font-size: 12px; color: var(--sw-sub); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.cards div { border: 1px solid var(--sw-border); border-radius: 8px; background: var(--sw-field); padding: 10px 12px; color: var(--sw-sub); }
+.cards strong { display: block; font-size: 26px; line-height: 1.15; font-variant-numeric: tabular-nums; color: var(--sw-text); }
+.cards strong.warn { color: var(--sw-warn); }
+.logo { font-family: var(--font-display); font-size: 30px; font-weight: 600; text-align: center; padding-block: 6px; color: var(--sw-primary); }
+.shell { display: grid; grid-template-columns: 150px minmax(0, 1fr); }
+.side { background: var(--sw-title); border-right: 1px solid var(--sw-border); padding: 12px 8px; display: grid; gap: 2px; align-content: start; }
+.side .brand { font-family: var(--font-display); font-size: 19px; font-weight: 600; padding: 2px 10px 12px; color: var(--sw-primary); }
+.side span { padding: 7px 10px; border-radius: 6px; }
+.side span.on { background: var(--sw-select); font-weight: 600; }
+.main { min-width: 0; }
+
+pre.tree { background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; margin: 0; overflow-x: auto; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.55; }
+
+/* Diagramas */
+.diagram { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); padding: 12px; }
+.diagram svg { display: block; width: 100%; min-width: 820px; height: auto; }
+svg .box { fill: var(--surface); stroke: var(--fg); stroke-width: 1.2; }
+svg .head { fill: var(--tint); stroke: var(--fg); stroke-width: 1.2; }
+svg .sep { stroke: var(--fg); stroke-width: 1; }
+svg .ln { stroke: var(--fg); stroke-width: 1.3; fill: none; }
+svg .dash { stroke: var(--muted); stroke-width: 1.2; fill: none; stroke-dasharray: 5 4; marker-end: url(#open); }
+svg .mk { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+svg text { fill: var(--fg); font-family: var(--font-mono); font-size: 11.5px; }
+svg .nm { font-family: var(--font-body); font-weight: 600; font-size: 14px; text-anchor: middle; }
+svg .st { font-family: var(--font-body); font-size: 11px; font-style: italic; text-anchor: middle; fill: var(--muted); }
+svg .mult { font-family: var(--font-body); font-weight: 600; font-size: 12px; fill: var(--accent); }
+svg .role { font-family: var(--font-body); font-style: italic; font-size: 10.5px; fill: var(--muted); text-anchor: middle; }
+svg .ty { fill: var(--muted); font-size: 10px; text-anchor: end; }
+svg .kpk { fill: var(--pk); font-weight: 600; font-size: 10px; }
+svg .kfk { fill: var(--fk); font-weight: 600; font-size: 10px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 0.85rem; color: var(--muted); }
+.legend b.pk { color: var(--pk); font-family: var(--font-mono); }
+.legend b.fk { color: var(--fk); font-family: var(--font-mono); }
+footer { padding-block: 28px 56px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+@media (max-width: 520px) { .form.two { grid-template-columns: auto minmax(0, 1fr); } .shell { grid-template-columns: 1fr; } .side { display: flex; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--sw-border); } .side .brand { width: 100%; padding-bottom: 4px; } }
+</style>
+
+<nav class="top"><div class="wrap">
+  <b>Acervo</b>
+  <a href="#tema">Tema e regras</a>
+  <a href="#telas">Protótipos de tela</a>
+  <a href="#classes">Diagrama de classes</a>
+  <a href="#mer">Diagrama MER</a>
+</div></nav>
+
+<div class="wrap">
+<header class="hero">
+  <span class="label">1ª etapa · Desenvolvimento desktop com Java Swing</span>
+  <h1>Sistema Acervo</h1>
+  <p>Gerenciamento de uma biblioteca comunitária: cadastro de livros, autores e leitores, controle de empréstimos, devoluções e multas por atraso.</p>
+  <div class="chips">
+    <span class="chip">Java Swing</span><span class="chip">Padrão MVC + DAO</span><span class="chip">JDBC · MySQL</span><span class="chip">8 tabelas</span><span class="chip">8 telas</span>
+  </div>
+</header>
+
+<section id="tema">
+  <h2>Tema e escopo</h2>
+  <div class="cols">
+    <div class="panel">
+      <h3>O problema</h3>
+      <p>Uma biblioteca de bairro controla acervo e empréstimos em cadernos. Isso gera livros emprestados sem registro, leitores com atraso que continuam retirando títulos e nenhuma visão de quais livros estão disponíveis.</p>
+      <p>O Acervo substitui o caderno por um sistema desktop usado pelos funcionários no balcão.</p>
+    </div>
+    <div class="panel">
+      <h3>Quem usa</h3>
+      <ul class="plain">
+        <li><b>Atendente</b>: cadastra leitores, registra empréstimos e devoluções.</li>
+        <li><b>Administrador</b>: tudo do atendente, mais cadastro de livros, autores, categorias e funcionários.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Regras de negócio</h3>
+      <ul class="plain">
+        <li>Prazo de devolução: 14 dias.</li>
+        <li>Até 3 livros por empréstimo.</li>
+        <li>Multa de R$ 0,50 por dia de atraso, por livro.</li>
+        <li>Leitor inativo ou com empréstimo atrasado não retira novos livros.</li>
+        <li>Empréstimo reduz <code>qtd_disponiveis</code>; devolução devolve a quantidade.</li>
+        <li>Um livro tem uma categoria e pode ter vários autores.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="scroll">
+  <table class="doc">
+    <thead><tr><th>Entidade</th><th>Papel no sistema</th><th>Relaciona-se com</th></tr></thead>
+    <tbody>
+      <tr><td><b>Categoria</b></td><td>Gênero ou assunto do livro (Romance, Técnico, Infantil)</td><td>1 categoria → N livros</td></tr>
+      <tr><td><b>Autor</b></td><td>Pessoa que escreveu o livro</td><td>N autores ↔ N livros</td></tr>
+      <tr><td><b>Livro</b></td><td>Título do acervo, com quantidade de exemplares e disponíveis</td><td>Categoria, Autor, Empréstimo</td></tr>
+      <tr><td><b>Leitor</b></td><td>Pessoa cadastrada que retira livros</td><td>1 leitor → N empréstimos</td></tr>
+      <tr><td><b>Funcionário</b></td><td>Usuário do sistema (login e perfil)</td><td>1 funcionário → N empréstimos</td></tr>
+      <tr><td><b>Empréstimo</b></td><td>Retirada de livros por um leitor, com datas, multa e status</td><td>Leitor, Funcionário, Livro</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="cols">
+    <div class="panel">
+      <h3>Organização prevista (MVC)</h3>
+      <p>Cada tela Swing (view) chama um controller, que usa os DAOs para falar com o banco e devolve objetos do model. A view nunca acessa JDBC.</p>
+    </div>
+    <pre class="tree">acervo/
+├─ model/       Livro, Autor, Categoria,
+│               Leitor, Funcionario, Emprestimo
+├─ dao/         LivroDAO, LeitorDAO, ...
+├─ controller/  LivroController, EmprestimoController, ...
+├─ view/        TelaLogin, TelaPrincipal, TelaLivro, ...
+└─ util/        ConexaoFactory</pre>
+  </div>
+</section>
+
+<section id="telas">
+  <h2>Protótipos de tela</h2>
+  <p>Oito telas, seis desenhadas abaixo. Autores e Categorias seguem o mesmo layout do cadastro de leitores. Visual claro e plano, no estilo do tema FlatLaf para Swing. Os dados exibidos são exemplos.</p>
+
+  <div class="screens">
+    <article class="screen">
+      <header><span class="mono">TelaLogin</span><span class="meta">JFrame · autentica o funcionário · tabela <code>funcionario</code></span></header>
+      <div class="win narrow">
+        <div class="bar"><i></i><b>Acervo · Entrar</b><em><u>–</u><u>▢</u><u>✕</u></em></div>
+        <div class="pad">
+          <div class="logo">Acervo</div>
+          <div class="form">
+            <label>Usuário</label><div class="in">marina.costa</div>
+            <label>Senha</label><div class="in">••••••••</div>
+          </div>
+          <div class="row end"><span class="btn def">Entrar</span><span class="btn">Cancelar</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen">
+      <header><span class="mono">TelaPrincipal</span><span class="meta">JFrame com menu lateral (JPanel + CardLayout) · abre as demais telas · perfil define os itens visíveis</span></header>
+      <div class="win">
+        <div class="bar"><i></i><b>Acervo · Biblioteca Comunitária</b><em><u>–</u><u>▢</u><u>✕</u></em></div>
+        <div class="shell">
+          <aside class="side">
+            <div class="brand">Acervo</div>
+            <span class="on">Início</span><span>Livros</span><span>Autores</span><span>Categorias</span><span>Leitores</span><span>Empréstimos</span><span>Devoluções</span><span>Relatórios</span>
+          </aside>
+          <div class="main"><div class="pad">
+            <div class="cards">
+              <div><strong>1.248</strong>títulos no acervo</div>
+              <div><strong>37</strong>empréstimos ativos</div>
+              <div><strong class="warn">5</strong>em atraso</div>
+              <div><strong>312</strong>leitores ativos</div>
+            </div>
+            <fieldset><legend>Atalhos</legend>
+              <div class="row"><span class="btn def">Novo empréstimo</span><span class="btn">Devoluções</span><span class="btn">Cadastrar leitor</span><span class="btn">Pesquisar livro</span></div>
+            </fieldset>
+          </div></div>
+        </div>
+        <div class="status"><span>Usuário: Marina Costa (Atendente)</span><span>05/10/2026</span></div>
+      </div>
+    </article>
+
+    <article class="screen wide">
+      <header><span class="mono">TelaLivro</span><span class="meta">JInternalFrame · CRUD de livros · tabelas <code>livro</code>, <code>livro_autor</code>, <code>categoria</code>, <code>autor</code> · LivroController</span></header>
+      <div class="win">
+        <div class="bar"><i></i><b>Cadastro de livros</b><em><u>–</u><u>▢</u><u>✕</u></em></div>
+        <div class="pad">
+          <div class="row"><label>Buscar por título ou autor</label><div class="in">dom</div><span class="btn">Pesquisar</span></div>
+          <div class="tw"><table class="t">
+            <thead><tr><th>Código</th><th>Título</th><th>Autor(es)</th><th>Categoria</th><th>Disponíveis</th></tr></thead>
+            <tbody>
+              <tr class="sel"><td>12</td><td>Dom Casmurro</td><td>Machado de Assis</td><td>Romance</td><td>2 de 3</td></tr>
+              <tr><td>18</td><td>Memórias Póstumas de Brás Cubas</td><td>Machado de Assis</td><td>Romance</td><td>1 de 2</td></tr>
+              <tr><td>41</td><td>Java: Como Programar</td><td>Paul Deitel, Harvey Deitel</td><td>Técnico</td><td>0 de 1</td></tr>
+              <tr><td>57</td><td>O Pequeno Príncipe</td><td>Antoine de Saint-Exupéry</td><td>Infantil</td><td>3 de 4</td></tr>
+            </tbody>
+          </table></div>
+          <fieldset><legend>Dados do livro</legend>
+            <div class="form two">
+              <label>Título</label><div class="in">Dom Casmurro</div>
+              <label>ISBN</label><div class="in">978-85-359-0277-5</div>
+              <label>Editora</label><div class="in">Editora Exemplo</div>
+              <label>Ano</label><div class="in">1899</div>
+              <label>Exemplares</label><div class="in">3</div>
+              <label>Categoria</label><div class="in combo">Romance</div>
+              <label>Autores</label>
+              <div class="in list"><div class="on">Machado de Assis</div><div>Antoine de Saint-Exupéry</div><div>Paul Deitel</div></div>
+              <span></span><span class="meta" style="font-size:11px">Ctrl + clique seleciona mais de um autor.</span>
+            </div>
+          </fieldset>
+          <div class="row end"><span class="btn">Novo</span><span class="btn def">Salvar</span><span class="btn">Excluir</span><span class="btn">Limpar</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen">
+      <header><span class="mono">TelaLeitor</span><span class="meta">JInternalFrame · CRUD de leitores · tabela <code>leitor</code> · LeitorController</span></header>
+      <div class="win">
+        <div class="bar"><i></i><b>Cadastro de leitores</b><em><u>–</u><u>▢</u><u>✕</u></em></div>
+        <div class="pad">
+          <div class="row"><label>Nome ou CPF</label><div class="in">ana</div><span class="btn">Pesquisar</span></div>
+          <div class="tw"><table class="t">
+            <thead><tr><th>Código</th><th>Nome</th><th>CPF</th><th>Situação</th></tr></thead>
+            <tbody>
+              <tr class="sel"><td>7</td><td>Ana Souza</td><td>111.222.333-44</td><td>Ativo</td></tr>
+              <tr><td>9</td><td>Bruno Lima</td><td>555.666.777-88</td><td>Ativo</td></tr>
+              <tr><td>14</td><td>Carla Dias</td><td>999.888.777-66</td><td>Inativo</td></tr>
+            </tbody>
+          </table></div>
+          <fieldset><legend>Dados do leitor</legend>
+            <div class="form">
+              <label>Nome</label><div class="in">Ana Souza</div>
+              <label>CPF</label><div class="in">111.222.333-44</div>
+              <label>E-mail</label><div class="in">ana.souza@exemplo.com</div>
+              <label>Telefone</label><div class="in">(47) 99999-0000</div>
+              <label>Cadastro</label><div class="in ro">12/03/2026</div>
+              <label>Ativo</label><div>☑</div>
+            </div>
+          </fieldset>
+          <div class="row end"><span class="btn">Novo</span><span class="btn def">Salvar</span><span class="btn">Excluir</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen">
+      <header><span class="mono">TelaEmprestimo</span><span class="meta">JInternalFrame · novo empréstimo · tabelas <code>emprestimo</code>, <code>item_emprestimo</code> · EmprestimoController</span></header>
+      <div class="win">
+        <div class="bar"><i></i><b>Novo empréstimo</b><em><u>–</u><u>▢</u><u>✕</u></em></div>
+        <div class="pad">
+          <fieldset><legend>Leitor</legend>
+            <div class="row"><label>CPF</label><div class="in">111.222.333-44</div><span class="btn">Buscar</span></div>
+            <div class="form" style="margin-top:8px">
+              <label>Nome</label><div class="in ro">Ana Souza</div>
+              <label>Situação</label><div class="in ro">Ativo · sem atrasos</div>
+            </div>
+          </fieldset>
+          <fieldset><legend>Livros (máximo 3)</legend>
+            <div class="row"><label>Título ou ISBN</label><div class="in">dom casmurro</div><span class="btn">Adicionar</span></div>
+            <div class="tw" style="margin-top:8px"><table class="t">
+              <thead><tr><th>Código</th><th>Título</th><th>Disponíveis</th></tr></thead>
+              <tbody>
+                <tr class="sel"><td>12</td><td>Dom Casmurro</td><td>2</td></tr>
+                <tr><td>57</td><td>O Pequeno Príncipe</td><td>3</td></tr>
+              </tbody>
+            </table></div>
+            <div class="row end" style="margin-top:8px"><span class="btn">Remover selecionado</span></div>
+          </fieldset>
+          <div class="form two">
+            <label>Empréstimo</label><div class="in ro">05/10/2026</div>
+            <label>Devolver até</label><div class="in ro">19/10/2026</div>
+          </div>
+          <div class="row end"><span class="btn def">Confirmar empréstimo</span><span class="btn">Cancelar</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="screen">
+      <header><span class="mono">TelaDevolucao</span><span class="meta">JInternalFrame · consulta e baixa de empréstimos · calcula a multa · EmprestimoController</span></header>
+      <div class="win">
+        <div class="bar"><i></i><b>Devoluções</b><em><u>–</u><u>▢</u><u>✕</u></em></div>
+        <div class="pad">
+          <div class="row"><label>Situação</label><div class="in combo" style="max-width:140px">Em aberto</div><label>Leitor</label><div class="in"></div><span class="btn">Filtrar</span></div>
+          <div class="tw"><table class="t">
+            <thead><tr><th>Nº</th><th>Leitor</th><th>Retirada</th><th>Prevista</th><th>Situação</th></tr></thead>
+            <tbody>
+              <tr class="sel"><td>42</td><td>Ana Souza</td><td>14/09/2026</td><td>28/09/2026</td><td class="warn">Atrasado</td></tr>
+              <tr><td>47</td><td>Bruno Lima</td><td>28/09/2026</td><td>12/10/2026</td><td>Ativo</td></tr>
+              <tr><td>49</td><td>Carla Dias</td><td>02/10/2026</td><td>16/10/2026</td><td>Ativo</td></tr>
+            </tbody>
+          </table></div>
+          <fieldset><legend>Empréstimo nº 42</legend>
+            <div class="form">
+              <label>Livros</label><div class="in list"><div>Java: Como Programar</div></div>
+              <label>Atraso</label><div class="in ro">7 dias</div>
+              <label>Multa</label><div class="in ro warn">R$ 3,50</div>
+            </div>
+          </fieldset>
+          <div class="row end"><span class="btn def">Registrar devolução</span><span class="btn">Fechar</span></div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="scroll">
+  <table class="doc">
+    <thead><tr><th>Tela (view)</th><th>Controller</th><th>Tabelas usadas</th><th>Perfil</th></tr></thead>
+    <tbody>
+      <tr><td><code>TelaLogin</code></td><td>FuncionarioController</td><td>funcionario</td><td>Todos</td></tr>
+      <tr><td><code>TelaPrincipal</code></td><td>PrincipalController</td><td>livro, emprestimo, leitor (contagens)</td><td>Todos</td></tr>
+      <tr><td><code>TelaLivro</code></td><td>LivroController</td><td>livro, livro_autor, autor, categoria</td><td>Administrador</td></tr>
+      <tr><td><code>TelaAutor</code></td><td>AutorController</td><td>autor</td><td>Administrador</td></tr>
+      <tr><td><code>TelaCategoria</code></td><td>CategoriaController</td><td>categoria</td><td>Administrador</td></tr>
+      <tr><td><code>TelaLeitor</code></td><td>LeitorController</td><td>leitor</td><td>Todos</td></tr>
+      <tr><td><code>TelaEmprestimo</code></td><td>EmprestimoController</td><td>emprestimo, item_emprestimo, leitor, livro</td><td>Todos</td></tr>
+      <tr><td><code>TelaDevolucao</code></td><td>EmprestimoController</td><td>emprestimo, item_emprestimo, livro, leitor</td><td>Todos</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="classes">
+  <h2>Diagrama de classes</h2>
+  <p>Classes do pacote <code>model</code>. Os relacionamentos viram atributos de objeto (<code>categoria</code>, <code>autores</code>, <code>leitor</code>). O acesso ao banco fica nos DAOs, fora destas classes.</p>
+  <div class="diagram"><svg id="cls" viewBox="0 0 990 840" role="img" aria-label="Diagrama de classes do sistema Acervo"></svg></div>
+  <div class="legend"><span>Linha contínua: associação, com multiplicidade nas pontas</span><span>Linha tracejada: uso de enumeração</span><span><b class="mono">-</b> privado · <b class="mono">+</b> público</span></div>
+</section>
+
+<section id="mer">
+  <h2>Diagrama MER</h2>
+  <p>Modelo lógico derivado das classes. As relações muitos-para-muitos (livro e autor, empréstimo e livro) viram as tabelas <code>livro_autor</code> e <code>item_emprestimo</code>.</p>
+  <div class="diagram"><svg id="mer-svg" viewBox="0 0 1060 770" role="img" aria-label="Diagrama entidade-relacionamento do sistema Acervo"></svg></div>
+  <div class="legend"><span><b class="pk">PK</b> chave primária</span><span><b class="fk">FK</b> chave estrangeira</span><span>1 e N indicam a cardinalidade em cada ponta</span></div>
+</section>
+
+<footer>Sistema Acervo · 1ª etapa: tema, protótipos, diagrama de classes e MER. Próximas etapas: script SQL, camadas model/dao/controller e telas em Swing.</footer>
+</div>
+
+<script>
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/* ---------- Diagrama de classes ---------- */
+(function () {
+  const W = 270, LH = 19;
+  const C = {
+    Autor: { x: 20, y: 20, attrs: ['- idAutor : int', '- nome : String', '- nacionalidade : String'] },
+    Livro: { x: 350, y: 20, attrs: ['- idLivro : int', '- titulo : String', '- isbn : String', '- anoPublicacao : int', '- editora : String', '- qtdExemplares : int', '- qtdDisponiveis : int', '- categoria : Categoria', '- autores : List<Autor>'], meths: ['+ temDisponivel() : boolean'] },
+    Categoria: { x: 700, y: 20, attrs: ['- idCategoria : int', '- nome : String', '- descricao : String'] },
+    Leitor: { x: 20, y: 360, attrs: ['- idLeitor : int', '- nome : String', '- cpf : String', '- email : String', '- telefone : String', '- dataCadastro : LocalDate', '- ativo : boolean'], meths: ['+ podeEmprestar() : boolean'] },
+    Emprestimo: { x: 350, y: 360, attrs: ['- idEmprestimo : int', '- leitor : Leitor', '- funcionario : Funcionario', '- livros : List<Livro>', '- dataEmprestimo : LocalDate', '- dataPrevistaDevolucao : LocalDate', '- dataDevolucao : LocalDate', '- multa : double', '- status : StatusEmprestimo'], meths: ['+ calcularMulta() : double', '+ registrarDevolucao() : void', '+ estaAtrasado() : boolean'] },
+    Funcionario: { x: 700, y: 360, attrs: ['- idFuncionario : int', '- nome : String', '- login : String', '- senhaHash : String', '- perfil : Perfil'], meths: ['+ autenticar(senha : String) : boolean'] },
+    StatusEmprestimo: { x: 350, y: 700, stereo: 'enumeration', attrs: ['ATIVO', 'DEVOLVIDO', 'ATRASADO'] },
+    Perfil: { x: 700, y: 580, stereo: 'enumeration', attrs: ['ADMINISTRADOR', 'ATENDENTE'] }
+  };
+  let s = '<defs><marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="mk" d="M1 1 L9 5 L1 9"/></marker></defs>';
+  let body = '';
+  for (const [name, c] of Object.entries(C)) {
+    const head = c.stereo ? 44 : 30;
+    const a = c.attrs.length * LH + 12;
+    const m = c.meths ? c.meths.length * LH + 12 : 0;
+    c.h = head + a + m;
+    body += `<rect class="box" x="${c.x}" y="${c.y}" width="${W}" height="${c.h}"/>`;
+    body += `<rect class="head" x="${c.x}" y="${c.y}" width="${W}" height="${head}"/>`;
+    if (c.stereo) body += `<text class="st" x="${c.x + W / 2}" y="${c.y + 16}">«${c.stereo}»</text>`;
+    body += `<text class="nm" x="${c.x + W / 2}" y="${c.y + (c.stereo ? 35 : 20)}">${name}</text>`;
+    c.attrs.forEach((t, i) => { body += `<text x="${c.x + 10}" y="${c.y + head + 6 + (i + 1) * LH - 5}">${esc(t)}</text>`; });
+    if (c.meths) {
+      body += `<line class="sep" x1="${c.x}" x2="${c.x + W}" y1="${c.y + head + a}" y2="${c.y + head + a}"/>`;
+      c.meths.forEach((t, i) => { body += `<text x="${c.x + 10}" y="${c.y + head + a + 6 + (i + 1) * LH - 5}">${esc(t)}</text>`; });
+    }
+  }
+  const line = (x1, y1, x2, y2) => `<line class="ln" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  const txt = (cl, x, y, t, anchor) => `<text class="${cl}" x="${x}" y="${y}"${anchor ? ` text-anchor="${anchor}"` : ''}>${t}</text>`;
+  // Associações horizontais (mesma altura)
+  const hlink = (L, R, y, ml, mr, role) => {
+    const x1 = C[L].x + W, x2 = C[R].x;
+    body += line(x1, y, x2, y) + txt('mult', x1 + 5, y - 5, ml) + txt('mult', x2 - 5, y - 5, mr, 'end') + txt('role', (x1 + x2) / 2, y + 14, role);
+  };
+  hlink('Autor', 'Livro', 80, '*', '*', 'autores');
+  hlink('Livro', 'Categoria', 80, '*', '1', 'categoria');
+  hlink('Leitor', 'Emprestimo', 420, '1', '*', 'leitor');
+  hlink('Emprestimo', 'Funcionario', 420, '*', '1', 'funcionario');
+  // Emprestimo -> Livro (vertical)
+  const vx = C.Emprestimo.x + W / 2, y1 = C.Livro.y + C.Livro.h, y2 = C.Emprestimo.y;
+  body += line(vx, y1, vx, y2) + txt('mult', vx + 7, y1 + 16, '*') + txt('mult', vx + 7, y2 - 7, '1..*') + txt('role', vx + 30, (y1 + y2) / 2 + 4, 'livros');
+  // Dependências com enumerações
+  const dep = (x, ya, yb) => `<line class="dash" x1="${x}" y1="${ya}" x2="${x}" y2="${yb}"/>`;
+  body += dep(vx, C.Emprestimo.y + C.Emprestimo.h, C.StatusEmprestimo.y);
+  body += dep(C.Funcionario.x + W / 2, C.Funcionario.y + C.Funcionario.h, C.Perfil.y);
+  document.getElementById('cls').innerHTML = s + body;
+})();
+
+/* ---------- Diagrama MER ---------- */
+(function () {
+  const W = 210, RH = 22, HH = 30;
+  const T = {
+    autor: { x: 20, y: 30, rows: [['PK', 'id_autor', 'INT'], ['', 'nome', 'VARCHAR(120)'], ['', 'nacionalidade', 'VARCHAR(60)']] },
+    livro_autor: { x: 290, y: 30, rows: [['PK,FK', 'id_autor', 'INT'], ['PK,FK', 'id_livro', 'INT']] },
+    livro: { x: 560, y: 30, rows: [['PK', 'id_livro', 'INT'], ['', 'titulo', 'VARCHAR(200)'], ['', 'isbn', 'VARCHAR(20)'], ['', 'ano_publicacao', 'INT'], ['', 'editora', 'VARCHAR(100)'], ['', 'qtd_exemplares', 'INT'], ['', 'qtd_disponiveis', 'INT'], ['FK', 'id_categoria', 'INT']] },
+    categoria: { x: 830, y: 30, rows: [['PK', 'id_categoria', 'INT'], ['', 'nome', 'VARCHAR(80)'], ['', 'descricao', 'VARCHAR(255)']] },
+    leitor: { x: 20, y: 330, rows: [['PK', 'id_leitor', 'INT'], ['', 'nome', 'VARCHAR(120)'], ['', 'cpf', 'CHAR(11)'], ['', 'email', 'VARCHAR(120)'], ['', 'telefone', 'VARCHAR(20)'], ['', 'data_cadastro', 'DATE'], ['', 'ativo', 'BOOLEAN']] },
+    emprestimo: { x: 290, y: 330, rows: [['PK', 'id_emprestimo', 'INT'], ['FK', 'id_leitor', 'INT'], ['FK', 'id_funcionario', 'INT'], ['', 'data_emprestimo', 'DATE'], ['', 'data_prevista', 'DATE'], ['', 'data_devolucao', 'DATE'], ['', 'multa', 'DECIMAL(8,2)'], ['', 'status', 'VARCHAR(12)']] },
+    item_emprestimo: { x: 560, y: 330, rows: [['PK,FK', 'id_emprestimo', 'INT'], ['PK,FK', 'id_livro', 'INT']] },
+    funcionario: { x: 290, y: 600, rows: [['PK', 'id_funcionario', 'INT'], ['', 'nome', 'VARCHAR(120)'], ['', 'login', 'VARCHAR(40)'], ['', 'senha_hash', 'VARCHAR(255)'], ['', 'perfil', 'VARCHAR(15)']] }
+  };
+  let b = '';
+  for (const [name, t] of Object.entries(T)) {
+    const h = HH + t.rows.length * RH;
+    b += `<rect class="box" x="${t.x}" y="${t.y}" width="${W}" height="${h}"/>`;
+    b += `<rect class="head" x="${t.x}" y="${t.y}" width="${W}" height="${HH}"/>`;
+    b += `<text class="nm" x="${t.x + W / 2}" y="${t.y + 20}" style="font-family:var(--font-mono)">${name}</text>`;
+    t.rows.forEach((r, i) => {
+      const cy = t.y + HH + i * RH + 15;
+      if (r[0]) b += `<text class="${r[0].startsWith('PK') ? 'kpk' : 'kfk'}" x="${t.x + 8}" y="${cy}">${r[0]}</text>`;
+      b += `<text x="${t.x + 46}" y="${cy}">${r[1]}</text>`;
+      b += `<text class="ty" x="${t.x + W - 8}" y="${cy}">${r[2]}</text>`;
+    });
+  }
+  const pl = pts => `<polyline class="ln" points="${pts}"/>`;
+  const m = (x, y, t, a) => `<text class="mult" x="${x}" y="${y}"${a ? ` text-anchor="${a}"` : ''}>${t}</text>`;
+  // autor 1 — N livro_autor
+  b += pl('230,71 290,71') + m(236, 64, '1') + m(284, 64, 'N', 'end');
+  // livro_autor N — 1 livro
+  b += pl('500,93 530,93 530,71 560,71') + m(506, 87, 'N') + m(554, 64, '1', 'end');
+  // livro N — 1 categoria
+  b += pl('770,225 800,225 800,71 830,71') + m(776, 219, 'N') + m(824, 64, '1', 'end');
+  // livro 1 — N item_emprestimo
+  b += pl('665,236 665,330') + m(672, 254, '1') + m(672, 322, 'N');
+  // emprestimo 1 — N item_emprestimo
+  b += pl('500,371 560,371') + m(506, 365, '1') + m(554, 365, 'N', 'end');
+  // leitor 1 — N emprestimo
+  b += pl('230,371 260,371 260,393 290,393') + m(236, 365, '1') + m(284, 387, 'N', 'end');
+  // funcionario 1 — N emprestimo
+  b += pl('395,600 395,536') + m(402, 592, '1') + m(402, 553, 'N');
+  document.getElementById('mer-svg').innerHTML = b;
+})();
+</script>
